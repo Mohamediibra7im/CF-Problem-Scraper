@@ -134,7 +134,7 @@ The script supports all standard Codeforces tags, including:
 
 ```bash
 $ python main.py
-Enter your Codeforces handle: tourist
+Enter your Codeforces handle: MIDORIYA_
 Enter desired tags (comma-separated, e.g., math,greedy): math,greedy
 Enter minimum rating: 800
 Enter maximum rating: 1000
