@@ -1,124 +1,45 @@
-import requests
-import json
+from requests_cache import CachedSession
+from api import get_solved_problems, get_problemset
+from input_validation import (
+    get_handle_input,
+    get_tags_input,
+    get_rating_input,
+    get_exclude_solved_input,
+)
+from problem_filter import filter_problems, save_problems
 
-def check_handle_exists(handle):
-    url = f"https://codeforces.com/api/user.info?handles={handle}"
-    response = requests.get(url)
-    return response.status_code == 200 and response.json()['status'] == 'OK'
 
-def get_problems_by_tags_and_rating(tags, min_rating, max_rating, handle):
-    
-    # Get solved problems
-    solved_set = set()
-    status_url = f"https://codeforces.com/api/user.status?handle={handle}"
-    status_response = requests.get(status_url)
+def main():
+    # Initialize cached session
+    # Create a cached session to avoid hitting the API too frequently
+    session = CachedSession("codeforces_cache", expire_after=3600)  # Cache for 1 hour
 
-    if status_response.status_code == 200:
-        submissions = status_response.json()['result']
-        for sub in submissions:
-            if sub.get('verdict') == 'OK':
-                problem = sub['problem']
-                solved_key = (problem['contestId'], problem['index'])
-                solved_set.add(solved_key)
+    # Get user inputs
+    handle = get_handle_input(session)
+    tags = get_tags_input()
+    min_rating, max_rating = get_rating_input()
+    exclude_solved = get_exclude_solved_input()
+
+    # Fetch data
+    solved_set = get_solved_problems(handle, session)
+    problems = get_problemset(session)
+
+    if not problems:
+        print("No problems fetched. Exiting.")
+        session.close()
+        return
+
+    # Filter and save problems
+    filtered_problems = filter_problems(
+        problems, tags, min_rating, max_rating, solved_set, exclude_solved
+    )
+    if filtered_problems:
+        save_problems(filtered_problems)
     else:
-        print("Failed to fetch user submission data")
-        return
+        print("No problems found matching the criteria.")
 
-    # Fetch problemset
-    url = 'https://codeforces.com/api/problemset.problems'
-    response = requests.get(url)
-
-    if response.status_code != 200:
-        print("Failed to fetch problemset")
-        return
-
-    print("Successfully fetched data")
-
-    data = response.json()
-    problems = data['result']['problems']
-
-    filtered_problems = []
-
-    for problem in problems:
-        if 'rating' not in problem:
-            continue
-
-        if not (min_rating <= problem['rating'] <= max_rating):
-            continue
-
-        problem_tags = problem.get("tags", [])
-        if any(tag in problem_tags for tag in tags):
-            key = (problem['contestId'], problem['index'])
-            entry = {
-                "name": f"{problem['contestId']}{problem['index']} - {problem['name']}",
-                "link": f"https://codeforces.com/problemset/problem/{problem['contestId']}/{problem['index']}",
-                "rating": problem['rating'],
-                "status": "solved" if key in solved_set else "unsolved"
-            }
-            filtered_problems.append(entry)
-
-    filtered_problems.sort(key=lambda x: x['rating'])
-
-    with open("filtered_problems.json", "w", encoding="utf-8") as f:
-        json.dump(filtered_problems, f, ensure_ascii=False, indent=4)
-
-    print(f"Saved {len(filtered_problems)} problems to 'filtered_problems.json'")
+    session.close()
 
 
-# Handle input with validation
-while True:
-    handle = input("Enter your Codeforces handle: ").strip()
-
-    if not handle:
-        print("You must write your handle")
-        continue
-
-    if not check_handle_exists(handle):
-        print("The handle not found")
-        continue
-
-    break
-
-tags = ["implementation", "brute force", "math", "greedy", "sortings", "strings"]
-min_rating = 800
-max_rating = 1000
-
-get_problems_by_tags_and_rating(tags, min_rating, max_rating, handle)
-
-# Codeforces Tags:
-# -> 2-sat
-# -> binary search
-# -> bitmasks
-# -> brute force
-# -> chinese remainder theorem
-# -> combinatorics
-# -> constructive algorithms
-# -> data structures
-# -> dfs and similar
-# -> divide and conquer
-# -> dp
-# -> dsu
-# -> expression parsing
-# -> fft
-# -> flows
-# -> games
-# -> geometry
-# -> graph matchings
-# -> graphs
-# -> greedy
-# -> hashing
-# -> implementation
-# -> interactive
-# -> math
-# -> matrices
-# -> meet-in-the-middle
-# -> number theory
-# -> probabilities
-# -> schedules
-# -> shortest paths
-# -> sortings
-# -> string suffix structures
-# -> strings
-# -> ternary search
-# -> trees
-# -> two pointers
+if __name__ == "__main__":
+    main()
