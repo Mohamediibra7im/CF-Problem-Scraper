@@ -171,3 +171,6 @@ The GUI displays all standard Codeforces tags for selection, including:
    - Click "Save Results" to generate:
      - `filtered_problems_math_greedy.json`
      - `filtered_problems_math_greedy.csv`
+
+## Video Tutorial 📹
+Check out this video tutorial for a walkthrough of the project: [CF-Problem Scraper Video](https://drive.google.com/file/d/1mOd4NQ6jyPIZywjyLrvwGAnbN9EfOob2/view?usp=sharing) 🎥
