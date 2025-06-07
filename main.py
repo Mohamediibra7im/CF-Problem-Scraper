@@ -1,53 +1,13 @@
-from requests_cache import CachedSession
-from api import get_solved_problems, get_problemset
-from input_validation import (
-    get_handle_input,
-    get_tags_input,
-    get_rating_input,
-    get_exclude_solved_input,
-    confirm_inputs,
-)
-from problem_filter import filter_problems, save_problems
+from gui import CodeforcesProblemFilterApp
+from PyQt5.QtWidgets import QApplication
+import sys
 
 
 def main():
-    # Initialize cached session
-    # Create a cached session to avoid hitting the API too frequently
-    session = CachedSession("codeforces_cache", expire_after=3600)  # Cache for 1 hour
-    print("Welcome to the CF Problem Scraper!")
-    print("This tool helps you filter Codeforces problems based on your criteria.")
-    print("========================================================\n")
-
-    while True:
-        handle = get_handle_input(session)
-        tags = get_tags_input()
-        min_rating, max_rating = get_rating_input()
-        exclude_solved = get_exclude_solved_input()
-        if confirm_inputs(handle, tags, min_rating, max_rating, exclude_solved):
-            break
-        print("Please re-enter your inputs.")
-
-    # Fetch data
-    print("Fetching solved problems...")
-    solved_set = get_solved_problems(handle, session)
-    problems = get_problemset(session)
-
-    if not problems:
-        print("No problems fetched. Exiting.")
-        session.close()
-        return
-
-    filtered_problems = filter_problems(
-        problems, tags, min_rating, max_rating, solved_set, exclude_solved
-    )
-    print(f"Found {len(filtered_problems)} problems matching the criteria.")
-    print("Saving results...")
-    if filtered_problems:
-        save_problems(filtered_problems, tags)
-    else:
-        print("No problems found matching the criteria.")
-
-    session.close()
+    app = QApplication(sys.argv)
+    window = CodeforcesProblemFilterApp()
+    window.show()
+    sys.exit(app.exec_())
 
 
 if __name__ == "__main__":
