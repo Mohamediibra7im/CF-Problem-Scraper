@@ -2,7 +2,6 @@ import json
 import csv
 from uuid import uuid4
 
-
 def filter_problems(problems, tags, min_rating, max_rating, solved_set, exclude_solved):
     filtered_problems = []
     for problem in problems:
@@ -11,20 +10,20 @@ def filter_problems(problems, tags, min_rating, max_rating, solved_set, exclude_
         if not (min_rating <= problem["rating"] <= max_rating):
             continue
         problem_tags = problem.get("tags", [])
-        if any(tag in problem_tags for tag in tags):
-            key = (problem["contestId"], problem["index"])
-            if exclude_solved and key in solved_set:
-                continue
-            entry = {
-                "name": f"{problem['contestId']}{problem['index']} - {problem['name']}",
-                "link": f"https://codeforces.com/problemset/problem/{problem['contestId']}/{problem['index']}",
-                "rating": problem["rating"],
-                "status": "solved" if key in solved_set else "unsolved",
-            }
-            filtered_problems.append(entry)
-    filtered_problems.sort(key=lambda x: x["rating"])
+        if not any(tag in problem_tags for tag in tags):
+            continue
+        key = (problem["contestId"], problem["index"])
+        if exclude_solved and key in solved_set:
+            continue
+        entry = {
+            "Name": f"{problem['contestId']}{problem['index']} - {problem['name']}",
+            "Link": f"https://codeforces.com/problemset/problem/{problem['contestId']}/{problem['index']}",
+            "Rating": problem["rating"],
+            "Status": "solved" if key in solved_set else "unsolved",
+        }
+        filtered_problems.append(entry)
+    filtered_problems.sort(key=lambda x: x["Rating"])
     return filtered_problems
-
 
 def save_problems(filtered_problems):
     # Save to JSON
@@ -36,7 +35,7 @@ def save_problems(filtered_problems):
     # Save to CSV
     csv_filename = f"filtered_problems_{uuid4()}.csv"
     with open(csv_filename, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=["name", "link", "rating", "status"])
+        writer = csv.DictWriter(f, fieldnames=["Name", "Link", "Rating", "Status"])
         writer.writeheader()
         writer.writerows(filtered_problems)
     print(f"Saved {len(filtered_problems)} problems to '{csv_filename}'")
