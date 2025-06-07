@@ -5,6 +5,7 @@ from input_validation import (
     get_tags_input,
     get_rating_input,
     get_exclude_solved_input,
+    confirm_inputs,
 )
 from problem_filter import filter_problems, save_problems
 
@@ -13,14 +14,21 @@ def main():
     # Initialize cached session
     # Create a cached session to avoid hitting the API too frequently
     session = CachedSession("codeforces_cache", expire_after=3600)  # Cache for 1 hour
+    print("Welcome to the CF Problem Scraper!")
+    print("This tool helps you filter Codeforces problems based on your criteria.")
+    print("========================================================\n")
 
-    # Get user inputs
-    handle = get_handle_input(session)
-    tags = get_tags_input()
-    min_rating, max_rating = get_rating_input()
-    exclude_solved = get_exclude_solved_input()
+    while True:
+        handle = get_handle_input(session)
+        tags = get_tags_input()
+        min_rating, max_rating = get_rating_input()
+        exclude_solved = get_exclude_solved_input()
+        if confirm_inputs(handle, tags, min_rating, max_rating, exclude_solved):
+            break
+        print("Please re-enter your inputs.")
 
     # Fetch data
+    print("Fetching solved problems...")
     solved_set = get_solved_problems(handle, session)
     problems = get_problemset(session)
 
@@ -29,12 +37,13 @@ def main():
         session.close()
         return
 
-    # Filter and save problems
     filtered_problems = filter_problems(
         problems, tags, min_rating, max_rating, solved_set, exclude_solved
     )
+    print(f"Found {len(filtered_problems)} problems matching the criteria.")
+    print("Saving results...")
     if filtered_problems:
-        save_problems(filtered_problems)
+        save_problems(filtered_problems, tags)
     else:
         print("No problems found matching the criteria.")
 
