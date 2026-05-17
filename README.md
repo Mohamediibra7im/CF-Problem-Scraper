@@ -54,7 +54,7 @@ project/
 1. Clone or download the project files to a directory 📥.
 2. Install the required libraries:
    ```bash
-   pip install requests==2.32.3 requests-cache==1.2.1 PyQt5==5.15.11
+   pip install -r requirements.txt
    ```
 3. Ensure all Python files (`api.py`, `input_validation.py`, `problem_filter.py`, `gui.py`, `main.py`) and `requirements.txt` are in the same directory 📂.
 
@@ -171,6 +171,3 @@ The GUI displays all standard Codeforces tags for selection, including:
    - Click "Save Results" to generate:
      - `filtered_problems_math_greedy.json`
      - `filtered_problems_math_greedy.csv`
-
-## Video Tutorial 📹
-Check out this video tutorial for a walkthrough of the project: [CF-Problem Scraper Video](https://drive.google.com/file/d/1mOd4NQ6jyPIZywjyLrvwGAnbN9EfOob2/view?usp=sharing) 🎥
